@@ -10,6 +10,12 @@ struct Vertex {
 }
 implement_vertex!(Vertex, position);
 
+impl std::fmt::Display for Vertex {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "({}, {})", self.position[0], self.position[1])
+    }
+}
+
 
 fn main() {
     use glium_sdl2::DisplayBuild;
@@ -18,10 +24,10 @@ fn main() {
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
     let display = video_subsystem.window("Tutorial 01", 800, 600).resizable().build_glium().unwrap();
-    let vertex1 = Vertex { position: [-0.5, -0.5] };
-    let vertex2 = Vertex { position: [ 0.0,  0.5] };
-    let vertex3 = Vertex { position: [ 0.5, -0.25] };
-    let shape = vec![vertex1, vertex2, vertex3];
+    let v1 = Vertex { position: [-0.5, -0.5] };
+    let v2 = Vertex { position: [ 0.0,  0.5] };
+    let v3 = Vertex { position: [ 0.5, -0.25] };
+    let shape = vec![v1, v2, v3];
 
     let vertex_buffer = glium::VertexBuffer::new(&display, &shape).unwrap();
     let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
@@ -69,5 +75,15 @@ fn main() {
                 _ => ()
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::Vertex;
+
+    #[test]
+    fn test_vertex() {
+        assert_eq!("(3, 5)", format!("{}", Vertex { position: [3.0, 5.0] }));
     }
 }
