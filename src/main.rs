@@ -105,10 +105,17 @@ fn main() {
 
 #[cfg(test)]
 mod test {
-    use super::Vertex;
+    use super::{Vertex, handle_key};
+    use sdl2::keyboard::Keycode;
 
     #[test]
     fn test_vertex() {
         assert_eq!("(3, 5)", format!("{}", Vertex { position: [3.0, 5.0] }));
+    }
+
+    #[test]
+    fn test_handle_key() {
+        assert_eq!(false, handle_key(Keycode::Escape));
+        assert_eq!(true, handle_key(Keycode::Space));
     }
 }
