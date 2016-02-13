@@ -4,23 +4,25 @@ extern crate glium;
 extern crate glium_sdl2;
 extern crate sdl2;
 
+use std::fmt;
+use glium::{Surface, VertexBuffer, Program, index, uniforms};
+use sdl2::event::Event;
+use glium_sdl2::{DisplayBuild, SDL2Facade};
+
 #[derive(Copy, Clone)]
 struct Vertex {
     position: [f32; 2],
 }
 implement_vertex!(Vertex, position);
 
-impl std::fmt::Display for Vertex {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl fmt::Display for Vertex {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "({}, {})", self.position[0], self.position[1])
     }
 }
 
 
 fn main() {
-    use glium_sdl2::DisplayBuild;
-    use glium::Surface;
-
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
     let display = video_subsystem.window("Tutorial 01", 800, 600).resizable().build_glium().unwrap();
@@ -29,10 +31,10 @@ fn main() {
     let v3 = Vertex { position: [ 0.5, -0.25] };
     let shape = vec![v1, v2, v3];
 
-    let vertex_buffer = glium::VertexBuffer::new(&display, &shape).unwrap();
-    let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
+    let vertex_buffer = VertexBuffer::new(&display, &shape).unwrap();
+    let indices = index::NoIndices(index::PrimitiveType::TrianglesList);
 
-    fn create_shaders(display: &glium_sdl2::SDL2Facade) -> glium::Program {
+    fn create_shaders(display: &SDL2Facade) -> Program {
         let vertex_shader_src = r#"
             #version 130
 
@@ -53,7 +55,7 @@ fn main() {
             }
         "#;
 
-        glium::Program::from_source(display, vertex_shader_src, fragment_shader_src, None).unwrap()
+        Program::from_source(display, vertex_shader_src, fragment_shader_src, None).unwrap()
     }
     let program = create_shaders(&display);
 
@@ -63,13 +65,11 @@ fn main() {
     while running {
         let mut target = display.draw();
         target.clear_color(0.0, 0.0, 1.0, 1.0);
-        target.draw(&vertex_buffer, &indices, &program, &glium::uniforms::EmptyUniforms,
+        target.draw(&vertex_buffer, &indices, &program, &uniforms::EmptyUniforms,
                     &Default::default()).unwrap();
         target.finish().unwrap();
 
         for event in event_pump.poll_iter() {
-            use sdl2::event::Event;
-
             match event {
                 Event::Quit { .. } => running = false,
                 _ => ()
