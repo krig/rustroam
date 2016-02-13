@@ -1,0 +1,4 @@
+[package]
+name = "rustroam"
+version = "0.1.0"
+authors = ["Kristoffer Grönlund <krig@koru.se>"]
