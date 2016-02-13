@@ -7,6 +7,7 @@ extern crate sdl2;
 use std::fmt;
 use glium::{Surface, VertexBuffer, Program, index, uniforms};
 use sdl2::event::Event;
+use sdl2::keyboard::Keycode;
 use glium_sdl2::{DisplayBuild, SDL2Facade};
 
 #[derive(Copy, Clone)]
@@ -22,16 +23,33 @@ impl fmt::Display for Vertex {
 }
 
 
+fn handle_key(keycode: Keycode) -> bool {
+    match keycode {
+        Keycode::Escape => false,
+        _ => true,
+    }
+}
+
+
 fn main() {
-    let sdl_context = sdl2::init().unwrap();
-    let video_subsystem = sdl_context.video().unwrap();
-    let display = video_subsystem.window("Tutorial 01", 800, 600).resizable().build_glium().unwrap();
+    let sdl_context = sdl2::init()
+        .unwrap();
+    let video_subsystem = sdl_context
+        . video()
+        .unwrap();
+    let display = video_subsystem
+        .window("rustroam", 1024, 576)
+        .resizable()
+        .build_glium()
+        .unwrap();
+
     let v1 = Vertex { position: [-0.5, -0.5] };
     let v2 = Vertex { position: [ 0.0,  0.5] };
     let v3 = Vertex { position: [ 0.5, -0.25] };
     let shape = vec![v1, v2, v3];
 
-    let vertex_buffer = VertexBuffer::new(&display, &shape).unwrap();
+    let vertex_buffer = VertexBuffer::new(&display, &shape)
+        .unwrap();
     let indices = index::NoIndices(index::PrimitiveType::TrianglesList);
 
     fn create_shaders(display: &SDL2Facade) -> Program {
@@ -51,7 +69,7 @@ fn main() {
             out vec4 color;
 
             void main() {
-                color = vec4(1.0, 0.0, 0.0, 1.0);
+                color = vec4(1.0, 0.6, 0.1, 1.0);
             }
         "#;
 
@@ -64,13 +82,20 @@ fn main() {
 
     while running {
         let mut target = display.draw();
-        target.clear_color(0.0, 0.0, 1.0, 1.0);
-        target.draw(&vertex_buffer, &indices, &program, &uniforms::EmptyUniforms,
-                    &Default::default()).unwrap();
-        target.finish().unwrap();
+        target.clear_color(0.05, 0.05, 0.05, 1.0);
+        target.draw(&vertex_buffer,
+                    &indices,
+                    &program,
+                    &uniforms::EmptyUniforms,
+                    &Default::default())
+            .unwrap();
+        target
+            .finish()
+            .unwrap();
 
         for event in event_pump.poll_iter() {
             match event {
+                Event::KeyDown { keycode, .. } => running = handle_key(keycode.unwrap()),
                 Event::Quit { .. } => running = false,
                 _ => ()
             }
