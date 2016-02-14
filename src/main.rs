@@ -4,6 +4,8 @@ extern crate glium;
 extern crate glium_sdl2;
 extern crate sdl2;
 
+mod easing;
+
 use std::{fmt, io};
 use glium::{Surface, VertexBuffer, Program, index, uniforms};
 use sdl2::event::Event;
@@ -78,40 +80,34 @@ fn load_file(name: &str) -> Result<String> {
 
 
 fn main() {
-    let sdl_context = sdl2::init()
-        .unwrap();
-    let video_subsystem = sdl_context
-        . video()
-        .unwrap();
-    let display = video_subsystem
-        .window("rustroam", 1024, 576)
-        .resizable()
-        .build_glium()
-        .unwrap();
+    let sdl_context = sdl2::init().unwrap();
+    let video_subsystem = sdl_context.video().unwrap();
+    let display = video_subsystem.window("rustroam", 1024, 576).resizable().build_glium().unwrap();
+
+    //glium::get_supported_glsl_version();
 
     let v1 = Vertex { position: [-0.5, -0.5] };
     let v2 = Vertex { position: [ 0.0,  0.5] };
     let v3 = Vertex { position: [ 0.5, -0.25] };
     let shape = vec![v1, v2, v3];
 
-    let vertex_buffer = VertexBuffer::new(&display, &shape)
-        .unwrap();
+    let vertex_buffer = VertexBuffer::new(&display, &shape).unwrap();
     let indices = index::NoIndices(index::PrimitiveType::TrianglesList);
 
-    fn create_shaders(display: &SDL2Facade) -> Result<Program> {
+    fn load_shaders(display: &SDL2Facade) -> Result<Program> {
         let vertex_shader_src = try!(load_file("shaders/basic.vert"));
         let fragment_shader_src = try!(load_file("shaders/basic.frag"));
         let program = try!(Program::from_source(display, &vertex_shader_src, &fragment_shader_src, None));
         Ok(program)
     }
-    let program = create_shaders(&display).unwrap();
+    let program = load_shaders(&display).unwrap();
 
     let mut running = true;
     let mut event_pump = sdl_context.event_pump().unwrap();
 
     while running {
         let mut target = display.draw();
-        target.clear_color(0.05, 0.05, 0.05, 1.0);
+        target.clear_color(0., 0., 0., 1.);
         target.draw(&vertex_buffer,
                     &indices,
                     &program,

@@ -7,3 +7,5 @@ authors = ["Kristoffer Grönlund <krig@koru.se>"]
 glium_sdl2 = "0.10"
 sdl2 = "0.13"
 glium = "0.13"
+time = "0.1"
+noise = "0.1"
