@@ -4,7 +4,7 @@ extern crate glium;
 extern crate glium_sdl2;
 extern crate sdl2;
 
-use std::fmt;
+use std::{fmt, io};
 use glium::{Surface, VertexBuffer, Program, index, uniforms};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -22,6 +22,44 @@ impl fmt::Display for Vertex {
     }
 }
 
+#[derive(Debug)]
+enum Error {
+    Io(io::Error),
+    ProgramCreation(glium::program::ProgramCreationError)
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Error::Io(ref err) => err.fmt(f),
+            Error::ProgramCreation(ref err) => err.fmt(f)
+        }
+    }
+}
+
+impl std::error::Error for Error {
+    fn description(&self) -> &str {
+        match *self {
+            Error::Io(ref err) => err.description(),
+            Error::ProgramCreation(ref err) => err.description()
+        }
+    }
+}
+
+impl From<io::Error> for Error {
+    fn from(err: io::Error) -> Error {
+        Error::Io(err)
+    }
+}
+
+impl From<glium::program::ProgramCreationError> for Error {
+    fn from(err: glium::program::ProgramCreationError) -> Error {
+        Error::ProgramCreation(err)
+    }
+}
+
+type Result<T> = std::result::Result<T, Error>;
+
 
 fn handle_key(keycode: Keycode) -> bool {
     match keycode {
@@ -30,13 +68,12 @@ fn handle_key(keycode: Keycode) -> bool {
     }
 }
 
-fn load_file(name: &str) -> std::io::Result<String> {
+fn load_file(name: &str) -> Result<String> {
     use std::io::prelude::*;
     use std::fs::File;
-    let mut f = try!(File::open(name));
-    let mut s = String::new();
+    let (mut f, mut s) = (try!(File::open(name)), String::new());
     try!(f.read_to_string(&mut s));
-    Result::Ok(s)
+    Ok(s)
 }
 
 
@@ -61,12 +98,13 @@ fn main() {
         .unwrap();
     let indices = index::NoIndices(index::PrimitiveType::TrianglesList);
 
-    fn create_shaders(display: &SDL2Facade) -> Program {
-        let vertex_shader_src = load_file("shaders/basic.vert").unwrap();
-        let fragment_shader_src = load_file("shaders/basic.frag").unwrap();
-        Program::from_source(display, &vertex_shader_src, &fragment_shader_src, None).unwrap()
+    fn create_shaders(display: &SDL2Facade) -> Result<Program> {
+        let vertex_shader_src = try!(load_file("shaders/basic.vert"));
+        let fragment_shader_src = try!(load_file("shaders/basic.frag"));
+        let program = try!(Program::from_source(display, &vertex_shader_src, &fragment_shader_src, None));
+        Ok(program)
     }
-    let program = create_shaders(&display);
+    let program = create_shaders(&display).unwrap();
 
     let mut running = true;
     let mut event_pump = sdl_context.event_pump().unwrap();
