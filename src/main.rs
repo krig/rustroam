@@ -30,6 +30,15 @@ fn handle_key(keycode: Keycode) -> bool {
     }
 }
 
+fn load_file(name: &str) -> std::io::Result<String> {
+    use std::io::prelude::*;
+    use std::fs::File;
+    let mut f = try!(File::open(name));
+    let mut s = String::new();
+    try!(f.read_to_string(&mut s));
+    Result::Ok(s)
+}
+
 
 fn main() {
     let sdl_context = sdl2::init()
@@ -53,27 +62,9 @@ fn main() {
     let indices = index::NoIndices(index::PrimitiveType::TrianglesList);
 
     fn create_shaders(display: &SDL2Facade) -> Program {
-        let vertex_shader_src = r#"
-            #version 130
-
-            in vec2 position;
-
-            void main() {
-                gl_Position = vec4(position, 0.0, 1.0);
-            }
-        "#;
-
-        let fragment_shader_src = r#"
-            #version 130
-
-            out vec4 color;
-
-            void main() {
-                color = vec4(1.0, 0.6, 0.1, 1.0);
-            }
-        "#;
-
-        Program::from_source(display, vertex_shader_src, fragment_shader_src, None).unwrap()
+        let vertex_shader_src = load_file("shaders/basic.vert").unwrap();
+        let fragment_shader_src = load_file("shaders/basic.frag").unwrap();
+        Program::from_source(display, &vertex_shader_src, &fragment_shader_src, None).unwrap()
     }
     let program = create_shaders(&display);
 
